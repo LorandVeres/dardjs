@@ -44,18 +44,16 @@
         };
 
         toggle = function(el) {
-            var s = window.getComputedStyle(el, null).getPropertyValue("display"),
-                b = 'block',
-                n = 'none';
-            s === 'none' ? setCss(el, {
-                display : 'block'
-            }) : setCss(el, {
-                display : 'none'
-            });
+            var s = window.getComputedStyle(el, null).getPropertyValue("display");
+            s === 'none' ? el.style.display = 'block' : el.style.display = 'none';
         };
 
         myEvent = function(event, triger, doit) {
-            $(triger).addEventListener(event, doit);
+            if ($(triger) !== null) {
+                return on($(triger).addEventListener(event, doit));
+            } else {
+                console.log(triger + ' can not be find in this page');
+            }
         };
 
         // recomended usage for testing pourpuse only
@@ -88,6 +86,10 @@
                     change(-1);
                 }
             };
+        };
+
+        on = function(your_functions_here) {
+            window.onload = your_functions_here;
         };
 
         // Useful Object relating functions
@@ -206,3 +208,56 @@ var $ = ( function() {
             }
         };
     }());
+
+var ajax = function(obj) {
+    /*
+     var obj = {
+     type : 'GET',  // type of request POST or GET
+     url : 'your/page/url', // the page url
+     response : 'function', //handle the response from server
+     send : null, // in GET request is optional
+     json : true, // roptional equired if you do not stringify before the object
+     error : false // optional to see for errors in consol log
+     };
+     */
+    var getPostJson = function() {
+        var xhr = new XMLHttpRequest();
+        xhr.open(obj.type, obj.url);
+        if (obj.type === 'POST' && !MyObj.keyIn(obj, 'json'))
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        if (MyObj.keyIn(obj, 'json') && obj.json === true) {
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            obj.send = JSON.stringify(obj.send);
+        }
+        if (obj.type === 'GET' && MyObj.keyIn(obj, 'send')) {
+            if (isObj(obj.send))
+                obj.send = param(obj.send);
+        }
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                obj.response(xhr.responseText);
+            }
+            if (xhr.readyState === 4 && xhr.status !== 200) {
+                if (MyObj.keyIn(obj, 'error')) {
+                    obj.error ? console.log('Error: ' + xhr.status) : '';
+                }
+            }
+        };
+        MyObj.keyIn(obj, 'send') ? xhr.send(obj.send) : xhr.send(null);
+    };
+
+    function param(object) {
+        var encodedString = '';
+        for (var prop in object) {
+            if (object.hasOwnProperty(prop)) {
+                if (encodedString.length > 0) {
+                    encodedString += '&';
+                }
+                encodedString += encodeURI(prop + '=' + object[prop]);
+            }
+        }
+        return encodedString;
+    }
+    
+    getPostJson();
+};
