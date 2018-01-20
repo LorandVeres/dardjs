@@ -220,31 +220,31 @@ var ajax = function(obj) {
      error : false // optional to see for errors in consol log
      };
      */
-    var getPostJson = function() {
-        var xhr = new XMLHttpRequest();
-        xhr.open(obj.type, obj.url);
-        if (obj.type === 'POST' && !MyObj.keyIn(obj, 'json'))
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        if (MyObj.keyIn(obj, 'json') && obj.json === true) {
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            obj.send = JSON.stringify(obj.send);
-        }
-        if (obj.type === 'GET' && MyObj.keyIn(obj, 'send')) {
-            if (isObj(obj.send))
-                obj.send = param(obj.send);
-        }
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                obj.response(xhr.responseText);
+    var getPostJson = ( function() {
+            var xhr = new XMLHttpRequest();
+            xhr.open(obj.type, obj.url);
+            if (obj.type === 'POST' && !MyObj.keyIn(obj, 'json'))
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            if (MyObj.keyIn(obj, 'json') && obj.json === true) {
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                obj.send = JSON.stringify(obj.send);
             }
-            if (xhr.readyState === 4 && xhr.status !== 200) {
-                if (MyObj.keyIn(obj, 'error')) {
-                    obj.error ? console.log('Error: ' + xhr.status) : '';
+            if (obj.type === 'GET' && MyObj.keyIn(obj, 'send')) {
+                if (isObj(obj.send))
+                    obj.send = param(obj.send);
+            }
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    obj.response(xhr.responseText);
                 }
-            }
-        };
-        MyObj.keyIn(obj, 'send') ? xhr.send(obj.send) : xhr.send(null);
-    };
+                if (xhr.readyState === 4 && xhr.status !== 200) {
+                    if (MyObj.keyIn(obj, 'error')) {
+                        obj.error ? console.log('Error: ' + xhr.status) : '';
+                    }
+                }
+            };
+            MyObj.keyIn(obj, 'send') ? xhr.send(obj.send) : xhr.send(null);
+        }());
 
     function param(object) {
         var encodedString = '';
@@ -258,6 +258,30 @@ var ajax = function(obj) {
         }
         return encodedString;
     }
-    
-    getPostJson();
+
 };
+
+/*
+ *
+ *  Starting DOM manipulation functions
+ *
+ *
+ *
+ */
+
+( function() {
+
+        str2el = function(html) {
+            var fakeEl = document.createElement('iframe');
+            fakeEl.style.display = 'none';
+            document.body.appendChild(fakeEl);
+            fakeEl.contentDocument.open();
+            fakeEl.contentDocument.write(html);
+            fakeEl.contentDocument.close();
+            var el = fakeEl.contentDocument.body.firstChild;
+            document.body.removeChild(fakeEl);
+            return el;
+        };
+
+    }());
+
