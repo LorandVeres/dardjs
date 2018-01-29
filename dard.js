@@ -49,8 +49,8 @@
         };
 
         myEvent = function(event, triger, doit) {
-            if ($(triger) !== null) {
-                return on($(triger).addEventListener(event, doit));
+            if ($(triger)) {
+                on($(triger).addEventListener(event, doit));
             } else {
                 console.log(triger + ' can not be find in this page');
             }
@@ -90,6 +90,34 @@
 
         on = function(your_functions_here) {
             window.onload = your_functions_here;
+        };
+        
+        /*
+         * 
+         *  Here we go, we include js files on runtime
+         *  A benefit for modular aproach.
+         * 
+         */
+        
+        require_js_module = function(src){
+            ajax({
+                type : 'GET',
+                url : src,
+                response : function (script){
+                    eval.apply( window, [script] );
+                },
+                error : "ERROR: script not loaded: " + src 
+            });
+        };
+        
+        include_module = function (obj){
+            var el = $( obj.El );
+            var node = str2el( obj.html );
+            if(el.hasChildNodes()) 
+                el.removeChild( el.firstChild );
+            el.appendChild( node );
+            if(MyObj.keyIn( obj, 'js'))
+                require_js_module( obj.js );
         };
 
         // Useful Object relating functions
@@ -209,42 +237,52 @@ var $ = ( function() {
         };
     }());
 
+/*
+ *
+ *
+ * AJAX function with main funcionality on POST GET and JSON
+ *
+ *
+ *
+ */
+
 var ajax = function(obj) {
     /*
-     var obj = {
+     var ajaxObj = {
      type : 'GET',  // type of request POST or GET
      url : 'your/page/url', // the page url
      response : 'function', //handle the response from server
      send : null, // in GET request is optional
      json : true, // roptional equired if you do not stringify before the object
-     error : false // optional to see for errors in consol log
+     error : 'custom error message' // optional to see for errors in consol log
      };
      */
-    var getPostJson = ( function() {
-            var xhr = new XMLHttpRequest();
-            xhr.open(obj.type, obj.url);
-            if (obj.type === 'POST' && !MyObj.keyIn(obj, 'json'))
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            if (MyObj.keyIn(obj, 'json') && obj.json === true) {
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                obj.send = JSON.stringify(obj.send);
+    var getPostJson = function() {
+        var xhr = new XMLHttpRequest();
+        xhr.open(obj.type, obj.url);
+        xhr.setRequestHeader("HTTP_X_REQUESTED_WITH", "dard_ajax");
+        if (obj.type === 'POST' && !MyObj.keyIn(obj, 'json'))
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        if (MyObj.keyIn(obj, 'json') && obj.json === true) {
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            obj.send = JSON.stringify(obj.send);
+        }
+        if (obj.type === 'GET' && MyObj.keyIn(obj, 'send')) {
+            if (isObj(obj.send))
+                obj.send = param(obj.send);
+        }
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                obj.response(xhr.responseText);
             }
-            if (obj.type === 'GET' && MyObj.keyIn(obj, 'send')) {
-                if (isObj(obj.send))
-                    obj.send = param(obj.send);
+            if (xhr.readyState === 4 && xhr.status !== 200) {
+                if (MyObj.keyIn(obj, 'error')) {
+                    obj.error ? console.log(obj.error + xhr.status) : '';
+                }
             }
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    obj.response(xhr.responseText);
-                }
-                if (xhr.readyState === 4 && xhr.status !== 200) {
-                    if (MyObj.keyIn(obj, 'error')) {
-                        obj.error ? console.log('Error: ' + xhr.status) : '';
-                    }
-                }
-            };
-            MyObj.keyIn(obj, 'send') ? xhr.send(obj.send) : xhr.send(null);
-        }());
+        };
+        MyObj.keyIn(obj, 'send') ? xhr.send(obj.send) : xhr.send(null);
+    };
 
     function param(object) {
         var encodedString = '';
@@ -259,15 +297,17 @@ var ajax = function(obj) {
         return encodedString;
     }
 
-};
+    getPostJson();
+}; 
 
 /*
- *
+ * 
  *  Starting DOM manipulation functions
- *
- *
- *
+ * 
+ * 
+ * 
  */
+
 
 ( function() {
 
@@ -282,6 +322,13 @@ var ajax = function(obj) {
             document.body.removeChild(fakeEl);
             return el;
         };
-
-    }());
-
+        
+        
+        empty = function (el){
+            var e = $(el);
+            while(e.firstChild){
+                e.removeChild(e.firstChild);
+            }
+        };
+        
+}());
