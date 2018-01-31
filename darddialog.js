@@ -15,7 +15,7 @@ var dialog = {
             d.setAttribute('id', id);
             h.setAttribute('id', 'dard_d_hd');
             b.setAttribute('id', 'dard_d_cl');
-            b.appendChild(document.createTextNode('X'));
+            b.innerHTML = '&times;';
             h.appendChild(b);
             d.appendChild(h);
             d.appendChild(bd);
@@ -41,12 +41,12 @@ var dialog = {
 
     appendBody : function(body, obj) {
         if (MyObj.keyIn(obj, 'html')) {
-            if(typeof obj.html === 'string'){
+            if ( typeof obj.html === 'string') {
                 var el = str2el(obj.html);
                 body.appendChild(el);
             }
-            if(typeof obj.html == 'object'){
-                if(obj.html){
+            if ( typeof obj.html == 'object') {
+                if (obj.html) {
                     var el = obj.html.cloneNode(true);
                     body.appendChild(obj.html);
                 }
@@ -76,54 +76,58 @@ var dialog = {
     },
 
     init : function(triger, obj) {
+        var single = counter();
         if (triger) {
             triger.addEventListener('click', function() {
-                var el = dialog.mywindow(),
-                    d = el[0],
-                    h = el[1],
-                    b = el[2],
-                    bd = el[3],
-                    f = el[4],
-                    x,
-                    y;
+                if (single.show() < 1) {
+                    single.increment();
+                    var el = dialog.mywindow(),
+                        d = el[0],
+                        h = el[1],
+                        b = el[2],
+                        bd = el[3],
+                        f = el[4],
+                        x,
+                        y;
 
-                dialog.setClass(el, obj);
-                dialog.appendName(h, obj);
-                dialog.appendBody(bd, obj);
+                    dialog.setClass(el, obj);
+                    dialog.appendName(h, obj);
+                    dialog.appendBody(bd, obj);
 
-                h.addEventListener('mousedown', mouseDown, false);
-                f.addEventListener('mousedown', mouseDown, false);
-                window.addEventListener('mouseup', mouseUp, false);
-                b.addEventListener('click', function() {
-                    document.body.removeChild(d);
-                });
+                    h.addEventListener('mousedown', mouseDown, false);
+                    f.addEventListener('mousedown', mouseDown, false);
+                    window.addEventListener('mouseup', mouseUp, false);
+                    b.addEventListener('click', function() {
+                        document.body.removeChild(d);
+                        single.reset();
+                    });
 
-                function getStyle(e, s) {
-                    return window.getComputedStyle(e, null).getPropertyValue(s);
+                    function getStyle(e, s) {
+                        return window.getComputedStyle(e, null).getPropertyValue(s);
+                    }
+
+                    function mouseDown(e) {
+                        window.addEventListener('mousemove', divMove, true);
+                        y = e.clientY - getStyle(d, 'top').slice(0, -2),
+                        x = e.clientX - getStyle(d, 'left').slice(0, -2);
+                    }
+
+                    function mouseUp() {
+                        window.removeEventListener('mousemove', divMove, true);
+                    }
+
+                    function divMove(e) {
+                        //d.style.position = 'absolute';
+                        d.style.top = (e.clientY - y) + 'px';
+                        d.style.left = (e.clientX - x) + 'px';
+                    }
+
+
+                    dialog.myEvents(obj);
                 }
-
-                function mouseDown(e) {
-                    window.addEventListener('mousemove', divMove, true);
-                    y = e.clientY - getStyle(d, 'top').slice(0, -2),
-                    x = e.clientX - getStyle(d, 'left').slice(0, -2);
-                }
-
-                function mouseUp() {
-                    window.removeEventListener('mousemove', divMove, true);
-                }
-
-                function divMove(e) {
-                    //d.style.position = 'absolute';
-                    d.style.top = (e.clientY - y) + 'px';
-                    d.style.left = (e.clientX - x) + 'px';
-                }
-
-
-                dialog.myEvents(obj);
             });
-        }else{
+        } else {
             console.log(triger + ' dialog content not on this page');
         }
-
     }
 };

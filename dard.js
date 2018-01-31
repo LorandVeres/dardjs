@@ -111,7 +111,7 @@
         };
         
         include_module = function (obj){
-            var el = $( obj.El );
+            var el = $( obj.el );
             var node = str2el( obj.html );
             if(el.hasChildNodes()) 
                 el.removeChild( el.firstChild );
@@ -150,7 +150,7 @@
     }());
 // end of basic functions
 
-// the MAIN function
+// the MAIN function selector
 
 var $ = ( function() {
         var args = [],

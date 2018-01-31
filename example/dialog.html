@@ -30,6 +30,9 @@ div{
     padding: 0;
     box-sizing: border-box;
 }
+.template{
+    display: none;
+}
 .dard_d_db{
     width: 300px;
     height: 200px;
@@ -48,7 +51,7 @@ div{
     font-size: 17px;
     height: 12.5%;
     background-color: #C2CFD1;
-    cursor: pointer;
+    cursor: move;
 }
 .dard_d_bt{
     width: 25px;
@@ -73,7 +76,7 @@ div{
     height: 1.5%;
     display: block;
     background-color: #C2CFD1;
-    cursor: pointer;
+    cursor: move;
 }
 p{
     color: #555555;
@@ -84,8 +87,10 @@ p{
 /* Dialog box */
 .second{
     position: absolute;
-    top: 100px;
-    right:100px;
+    top: 12%;
+    right:50%;
+    margin-left: -150px;
+    margin-right: -150px;
     width: 300px;
     height: 400px;
     background-color: #ffffff;
@@ -108,13 +113,12 @@ p{
     font-size: 17px;
     height: 6.5%;
     background-color: #C2CFD1;
-    cursor: move;
 }
 /* Dialog box close button */
 .second_bt{
     width: 25px;
     height: 25px;
-    padding: 4px;
+    padding: 3px;
     display: block;
     color: #ff0000;
     font-weight: 800;
@@ -123,6 +127,9 @@ p{
     text-align: center;
     text-indent: 0;
     cursor: pointer;
+}
+.second_bt:hover{
+    color: #ffffff;
 }
 /* Dialog box body */
 .second_bd{
@@ -153,8 +160,37 @@ p{
                 <input type="button" value="show dialog" id="dialog" />
                 <input style="float: right; margin: 0 50px" type="button" value="show second instance" id="funybutton" />
             </div>
+            <div>
+                <pre>
+                    <code>
+funyFunction(){
+    alert('Say Hi');
+}                      
+                        
+dialog.init(
+    $('#funybutton'),
+    {
+        css : ['container', 'head', 'close button', 'body', 'footer'],
+        title : 'Dardjs dialog box',
+        html : $('.dialog-box'),
+        acton : {
+            myevent : ['click'],
+            triger : ['#id'],
+            handler: [ funyFunction ]
+        }
+    }
+);
+                    </code>
+                </pre>
+            </div>
             
-
+            <div class="template">
+                <div class="dialog-box">
+                    <p>This is a second istance of the dialog box. It is with an apart css style demontrating the posibility to make your life nicer</p>
+                    <p>The body of this dialog box it is appended from one html object existing in the document, making an easy templating</p>
+                    <p>In the first dialog  box the body is provided by html string. Useful when the response come from server</p>
+                </div>
+            </div>
             <footer>
                 <p>
                     &copy; Copyright  by Lorand Veres
@@ -181,17 +217,19 @@ p{
  * 
  */
 
-dialog.first = function(){alert('the class name of the triger button is ' + this.className);};
-dialog.second = function(){alert('this is the second function');};
+dialog.first = function(){alert('the class name of the triger button is ' + this.className + "\n" + 'this is the first function passed to the dialog box');};
+dialog.second = function(){alert("this is the second function, \n showing the fact that you can attach functions \n and of course events to one dialog box");};
 
 
 
-dialog.init($('#dialog'),
+dialog.init(
+    $('#dialog'),
     {
+        //css     dialog     head        close button     body         footer
         css : ['dard_d_db', 'dard_d_hb', 'dard_d_bt', 'dard_d_body', 'dard_d_f'],
         title : 'I am a js dialog box',
         /*
-         * html can be a literal string or DOM created
+         * html can be a literal string or for a DOM object see next example
          */
         html : '<form><br><input type="text" name="some" id="text_field" /><br><br>' +
                 '<input id="a" class="one" type="button" value="click me" />' + 
@@ -204,7 +242,7 @@ dialog.init($('#dialog'),
                  * are instantiated in a loop and paired to each other
                  */
                 myevent : ['click', 'click'],
-                triger : ['#a', '#b'],
+                triger : ['.one', '.two'],
                 handler : [dialog.first, dialog.second]
             }
     }
@@ -213,12 +251,13 @@ dialog.init($('#dialog'),
 
 (function otherDialog(){
     var anotherDialog = Object.create(dialog);
-    anotherDialog.init($('#funybutton'),
+    anotherDialog.init(
+        $('#funybutton'),
         {
+            
             css : ['second', 'second_h', 'second_bt', 'second_bd', 'second_f'],
             title : 'Dardjs dialog box',
-            html : '<p class="para"> This is a second istance of the dialog box. Could be with' +
-                 ' an apart css style to make your life nicer</p>'
+            html : $('.dialog-box')
         }
     );
 }());
