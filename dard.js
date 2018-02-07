@@ -27,7 +27,7 @@ function isStr(s) {
 }
 
 function isBool(b) {
-	return typeof b === 'bolean' ? true : false;
+	return typeof b === 'boolean' ? true : false;
 }
 
 function isNum(n) {
@@ -276,7 +276,7 @@ var $ = ( function() {
 			return el;
 		}
 
-		//type(getEl);
+		type(getEl);
 
 		return function() {
 			var args = varyArgs(arguments);
@@ -380,4 +380,4 @@ var ajax = function(obj) {
 			}
 		};
 
-	}());
+}());
