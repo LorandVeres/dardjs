@@ -219,9 +219,10 @@ function dialog (trigger, obj) {
 	}
 	
 	function removeToggleButton(){
-		if($$.t)
+		if($$.t){
 			document.body.removeChild($$.t);
 			$$.t.removeEventListener('click', maximize, true);
+		}
 	}
 	
 	function addMinButton(){
