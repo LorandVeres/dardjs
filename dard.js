@@ -153,7 +153,7 @@ function include_module(obj) {
 	if (el.hasChildNodes())
 		el.removeChild(el.firstChild);
 	el.appendChild(node);
-	if (MyObj.keyIn(obj, 'js'))
+	if (obj.keyIn('js'))
 		require_js_module(obj.js);
 }
 
@@ -165,12 +165,12 @@ function myObj() {
 		return this.hasOwnProperty(k) ? true : false;
 	};
 	self.type = function(i) {
-		if (i && !isset(i)) {
+		if (i && !isSet(i)) {
 			return 'undefined';
 		} else if (i && isFunc(i) && isSet(i.prototype)) {
-			return (this instanceof i) ? true : false;
+			return (this instanceof i) || this.constructor.name === 'Dard' ? true : false;
 		} else if (!i) {
-			return typeof this;
+			return this.constructor.name.toLowerCase();
 		}
 	};
 	self.size = function() {
@@ -189,105 +189,127 @@ function myObj() {
 	return self;
 }
 
+function camelCase(str) {
+	// Lower cases the string
+	return str.toLowerCase()
+	// Replaces any - or _ characters with a space
+	.replace(/[-_]+/g, ' ')
+	// Removes any non alphanumeric characters
+	.replace(/[^\w\s]/g, '')
+	// Uppercases the first character in each group immediately following a space
+	// (delimited by spaces)
+	.replace(/ (.)/g, function($1) {
+		return $1.toUpperCase();
+	})
+	// Removes spaces
+	.replace(/ /g, '');
+}
+
 // end of basic functions
 
 // the MAIN selector function
 //
 
 var $ = ( function() {
-		var args = [],
-		    document = window.document,
+	var args = [],
+		document = window.document,
 
-		    idRE = /^#{1}[a-z0-9\-\_]+\-*$/i, // id REgex
-		    classNameRE = /^\.{1}[a-z0-9\-\_\s]+$/i, // class REgex
-		    tagNameRE = /^<{1}[a-z]+>{1}$/i, // html tag REgex
-		    plainTagRE = /^[a-z1-6]{1,20}$/,
+		idRE = /^#{1}[a-z0-9\-\_]+\-*$/i, // id REgex
+		classNameRE = /^\.{1}[a-z0-9\-\_\s]+$/i, // class REgex
+		tagNameRE = /^<{1}[a-z]+>{1}$/i, // html tag REgex
+		plainTagRE = /^[a-z1-6]+$/,
+	    toType = {},
+	    toString = toType.toString,
+	    extend = {};
+	//
+	Object.assign(Object.prototype, new myObj());
 
-		    toType = {},
-		    toString = toType.toString,
-		    extend = {};
-		//
-		Object.assign(Object.prototype, new myObj());
-
-		function DardProto() {
-			var self = this;
-			self.extendProto = function(prop) {
-				if (prop.type() === 'object')
-					Object.assign(self, prop);
-			};
-			self.append = function(e) {
-				if ( typeof e === 'object')
-					this.appendChild(e);
-				if (isStr(e))
-					this.appendChild(str2el(e));
-			};
-			self.clone = function() {
-				return this.cloneNode(true);
-			};
-			self.text = function(t) {
-				if (isStr(t)) {
-					this.innerHTML = t;
-				} else if (!t) {
-					var tx = this.innerHTML;
-					console.log(tx);
-					return tx;
-				}
-			};
-			self.toggle = function() {
-				var s = window.getComputedStyle(this, null).getPropertyValue("display");
-				s === 'none' ? this.style.display = 'block' : this.style.display = 'none';
-			};
-			self.css = function(val) {
-				var k,
-				    f = '';
-				if (isObj(val)) {
-					for (k in val) {
-						if (val.hasOwnProperty(k))
-							f += k + ':' + val[k] + ';';
-					}
-					this.style.cssText = f;
-				}
-			};
-			self.me = function(){
-				console.log(self);
-			};
-				
-			return self;
-		}
-		
-		type(DardProto);
-
-		// Helping function
-		// Selecting the element from first parameter
-
-		function getEl(arg, item) {
-			var el = this;
-			if ( typeof arg == 'string') {
-				if (idRE.test(arg))
-					el = document.getElementById(arg.substring(1));
-				if (classNameRE.test(arg))
-					el = document.getElementsByClassName(arg.substring(1))[item];
-				if (tagNameRE.test(arg))
-					el = document.createElement(arg.replace(/^<+|>+$/gm, ''));
-				if (plainTagRE.test(arg))
-					el = document.getElementsByTagName(arg.replace(/^<+|>+$/gm,''))[item];
-			}
-			Object.assign(Object.getPrototypeOf(el), new DardProto());
-			return el;
-		}
-
-		type(getEl);
-
-		return function() {
-			var args = varyArgs(arguments);
-			var itemNo,
-			    el;
-			if (args.length > 0) {
-				isNum(args[1]) ? itemNo = args[1] : itemNo = 0;
-				return new getEl(args[0], itemNo);
+	var Dard = function() {
+		var self = this;
+		self.extendProto = function(prop) {
+			if (typeof prop === 'object')
+				Object.assign(self, prop);
+		};
+		self.append = function(e) {
+			if ( typeof e === 'object')
+				this.el.appendChild(e);
+			if (isStr(e))
+				this.el.appendChild(str2el(e));
+		};
+		self.clone = function() {
+			return this.el.cloneNode(true);
+		};
+		self.text = function(t) {
+			if (isStr(t)) {
+				this.el.innerHTML = t;
+			} else if (!t) {
+				var tx = this.el.innerHTML;
+				return tx;
 			}
 		};
-	}());
+		self.toggle = function() {
+			var s = window.getComputedStyle(this.el, null).getPropertyValue("display");
+			s === 'none' ? this.el.style.display = 'block' : this.el.style.display = 'none';
+		};
+		self.css = function(val) {
+			var k,
+			    f = '',
+			    c;
+			if (isObj(val)) {
+				for (k in val) {
+					if (val.hasOwnProperty(k)) {
+						c = k.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+						f += c + ':' + val[k] + ';';
+					}
+				}
+				this.el.style.cssText = f;
+			}
+		};
+		self.me = function() {
+			console.log(this);
+		};
+		self.empty = function() {
+			while (this.el.firstChild) {
+				this.el.removeChild(this.el.firstChild);
+			}
+		};
+		return self;
+	};
+	
+	// Selecting the element from first parameter
+	function getEl(arg, item) {
+		var itemNo,
+		    obj = {},
+		    args = varyArgs(arguments);
+		    this.constructor.prototype = new Dard();
+		isNum(args[1]) ? itemNo = args[1] : itemNo = 0;
+		if ( typeof arg == 'string') {
+			if (idRE.test(arg))
+				this.el = document.getElementById(arg.substring(1));
+			if (classNameRE.test(arg))
+				this.el = document.getElementsByClassName(arg.substring(1))[itemNo];
+			if (tagNameRE.test(arg))
+				this.el = document.createElement(arg.replace(/^<+|>+$/gm, ''));
+			if (plainTagRE.test(arg))
+				this.el = document.getElementsByTagName(arg)[itemNo];
+		}
+		if (this.el) {
+			return this;
+		}
+	}
+
+	type(Dard);
+	type(getEl);
+	
+	return function () {
+		var args = varyArgs(arguments),
+		    itemNo;
+		if (args.length > 0) {
+			isNum(args[1]) ? itemNo = args[1] : itemNo = 0;
+			return new getEl(args[0], itemNo);
+		}
+	};
+}());
 /*
  *
  *
@@ -312,13 +334,13 @@ var ajax = function(obj) {
 		var xhr = new XMLHttpRequest();
 		xhr.open(obj.type, obj.url);
 		xhr.setRequestHeader("HTTP_X_REQUESTED_WITH", "dard_ajax");
-		if (obj.type === 'POST' && !MyObj.keyIn(obj, 'json'))
+		if (obj.type === 'POST' && !obj.keyIn('json'))
 			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-		if (MyObj.keyIn(obj, 'json') && obj.json === true) {
+		if (obj.keyIn('json') && obj.json === true) {
 			xhr.setRequestHeader('Content-Type', 'application/json');
 			obj.send = JSON.stringify(obj.send);
 		}
-		if (obj.type === 'GET' && MyObj.keyIn(obj, 'send')) {
+		if (obj.type === 'GET' && obj.keyIn('send')) {
 			if (isObj(obj.send))
 				obj.send = param(obj.send);
 		}
@@ -327,12 +349,12 @@ var ajax = function(obj) {
 				obj.response(xhr.responseText);
 			}
 			if (xhr.readyState === 4 && xhr.status !== 200) {
-				if (MyObj.keyIn(obj, 'error')) {
+				if (obj.keyIn('error')) {
 					obj.error ? console.log(obj.error + xhr.status) : '';
 				}
 			}
 		};
-		MyObj.keyIn(obj, 'send') ? xhr.send(obj.send) : xhr.send(null);
+		obj.keyIn('send') ? xhr.send(obj.send) : xhr.send(null);
 	};
 
 	function param(object) {
@@ -359,25 +381,21 @@ var ajax = function(obj) {
  *
  */
 
-( function() {
+function str2el(html) {
+	var fakeEl = document.createElement('iframe');
+	fakeEl.style.display = 'none';
+	document.body.appendChild(fakeEl);
+	fakeEl.contentDocument.open();
+	fakeEl.contentDocument.write(html);
+	fakeEl.contentDocument.close();
+	var el = fakeEl.contentDocument.body.firstChild;
+	document.body.removeChild(fakeEl);
+	return el;
+};
 
-		str2el = function(html) {
-			var fakeEl = document.createElement('iframe');
-			fakeEl.style.display = 'none';
-			document.body.appendChild(fakeEl);
-			fakeEl.contentDocument.open();
-			fakeEl.contentDocument.write(html);
-			fakeEl.contentDocument.close();
-			var el = fakeEl.contentDocument.body.firstChild;
-			document.body.removeChild(fakeEl);
-			return el;
-		};
-
-		emptyEl = function(el) {
-			var e = $(el);
-			while (e.firstChild) {
-				e.removeChild(e.firstChild);
-			}
-		};
-
-}());
+function emptyEl(el) {
+	var e = $(el);
+	while (e.firstChild) {
+		e.removeChild(e.firstChild);
+	}
+}
