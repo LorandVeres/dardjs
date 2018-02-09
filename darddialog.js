@@ -1,5 +1,5 @@
-/*
 
+/*
  custom : { wrapper, head, close, max, min, body, footer }
  onside : html,
  title : 'Dardjs dialog box',
@@ -12,8 +12,6 @@
  	trigger : [html],
  	handler: [ funyFunction ]
  }
-
-
  */
 function dialog (trigger, obj) {
 
@@ -142,7 +140,7 @@ function dialog (trigger, obj) {
 		if (obj.keyIn('acton')) {
 			for (var i = 0,
 			    j = obj.acton.myevent.length; i < j; i++) {
-			    $(obj.acton.trigger[i]).addEventListener(obj.acton.myevent[i], obj.acton.handler[i], false);
+			    $(obj.acton.trigger[i])[0].addEventListener(obj.acton.myevent[i], obj.acton.handler[i], false);
 			}
 		}
 	}
@@ -219,9 +217,10 @@ function dialog (trigger, obj) {
 	}
 	
 	function removeToggleButton(){
-		if($$.t)
+		if($$.t && obj.onside){
 			document.body.removeChild($$.t);
 			$$.t.removeEventListener('click', maximize, true);
+		}
 	}
 	
 	function addMinButton(){

@@ -219,37 +219,41 @@ var $ = ( function() {
 		tagNameRE = /^<{1}[a-z]+>{1}$/i, // html tag REgex
 		plainTagRE = /^[a-z1-6]+$/,
 	    toType = {},
-	    toString = toType.toString,
-	    extend = {};
+	    toString = toType.toString;
 	//
 	Object.assign(Object.prototype, new myObj());
 
 	var Dard = function() {
 		var self = this;
+		var el , e;
 		self.extendProto = function(prop) {
 			if (typeof prop === 'object')
 				Object.assign(self, prop);
 		};
 		self.append = function(e) {
 			if ( typeof e === 'object')
-				this.el.appendChild(e);
+				this[0].appendChild(e);
 			if (isStr(e))
-				this.el.appendChild(str2el(e));
+				this[0].appendChild(str2el(e));
 		};
 		self.clone = function() {
-			return this.el.cloneNode(true);
+			if(this[0])
+				return this[0].cloneNode(true);
 		};
 		self.text = function(t) {
 			if (isStr(t)) {
-				this.el.innerHTML = t;
+				this[0].innerHTML = t;
 			} else if (!t) {
-				var tx = this.el.innerHTML;
+				var tx = this[0].innerHTML;
 				return tx;
 			}
 		};
+		self.html = function(){
+			return this[0].outerHTML;
+		};
 		self.toggle = function() {
 			var s = window.getComputedStyle(this.el, null).getPropertyValue("display");
-			s === 'none' ? this.el.style.display = 'block' : this.el.style.display = 'none';
+			s === 'none' ? this[0].style.display = 'block' : this[0].style.display = 'none';
 		};
 		self.css = function(val) {
 			var k,
@@ -262,15 +266,18 @@ var $ = ( function() {
 						f += c + ':' + val[k] + ';';
 					}
 				}
-				this.el.style.cssText = f;
+				this[0].style.cssText = f;
 			}
 		};
 		self.me = function() {
-			console.log(this);
+			return this[0];
+		};
+		self.on = function (ev, fn){
+			window.onload = this[0].addEventListener(ev, fn, false);;
 		};
 		self.empty = function() {
-			while (this.el.firstChild) {
-				this.el.removeChild(this.el.firstChild);
+			while (this[0].firstChild) {
+				this[0].removeChild(this[0].firstChild);
 			}
 		};
 		return self;
@@ -278,23 +285,24 @@ var $ = ( function() {
 	
 	// Selecting the element from first parameter
 	function getEl(arg, item) {
-		var itemNo,
-		    obj = {},
-		    args = varyArgs(arguments);
-		    this.constructor.prototype = new Dard();
+		var itemNo, el =  this,
+			args = varyArgs(arguments);
+		el.constructor.prototype = new Dard();
 		isNum(args[1]) ? itemNo = args[1] : itemNo = 0;
 		if ( typeof arg == 'string') {
 			if (idRE.test(arg))
-				this.el = document.getElementById(arg.substring(1));
+				el[0] = document.getElementById(arg.substring(1));
 			if (classNameRE.test(arg))
-				this.el = document.getElementsByClassName(arg.substring(1))[itemNo];
+				el[0] = document.getElementsByClassName(arg.substring(1))[itemNo];
 			if (tagNameRE.test(arg))
-				this.el = document.createElement(arg.replace(/^<+|>+$/gm, ''));
+				el[0] = document.createElement(arg.replace(/^<+|>+$/gm, ''));
 			if (plainTagRE.test(arg))
-				this.el = document.getElementsByTagName(arg)[itemNo];
+				el[0] = document.getElementsByTagName(arg)[itemNo];
+		}else if( isObj(args[0]) && args[0].type() === 'dard'){
+			el = args[0];
 		}
-		if (this.el) {
-			return this;
+		if (el[0]) {
+			return  el;
 		}
 	}
 
