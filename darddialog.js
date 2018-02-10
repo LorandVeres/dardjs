@@ -286,7 +286,7 @@ function dialog (trigger, obj) {
 				}
 			});
 		} else {
-			console.log(trigger + ' dialog button not on this page');
+			return false;
 		}
 	}
 	init(trigger, obj);

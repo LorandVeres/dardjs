@@ -236,35 +236,42 @@ var $ =  (function() {
 				Object.assign(self, prop);
 		};
 		self.append = function(e) {
-			if ( typeof e === 'object')
-				this[0].appendChild(e);
-			if (isStr(e))
-				this[0].appendChild(str2el(e));
+			if(this[0]){
+				if ( typeof e === 'object')
+					this[0].appendChild(e);
+				if (isStr(e))
+					this[0].appendChild(str2el(e));
+			}
 		};
 		self.clone = function() {
 			if(this[0])
 				return this[0].cloneNode(true);
 		};
 		self.text = function(t) {
-			if (isStr(t)) {
-				this[0].innerHTML = t;
-			} else if (!t) {
-				var tx = this[0].innerHTML;
-				return tx;
+			if(this[0]){
+				if (isStr(t)) {
+					this[0].innerHTML = t;
+				} else if (!t) {
+					var tx = this[0].innerHTML;
+					return tx;
+				}
 			}
 		};
 		self.html = function(){
-			return this[0].outerHTML;
+			if (this[0])
+				return this[0].outerHTML;
 		};
 		self.toggle = function() {
-			var s = window.getComputedStyle(this.el, null).getPropertyValue("display");
-			s === 'none' ? this[0].style.display = 'block' : this[0].style.display = 'none';
+			if(this[0]){
+				var s = window.getComputedStyle(this.el, null).getPropertyValue("display");
+				s === 'none' ? this[0].style.display = 'block' : this[0].style.display = 'none';
+			}
 		};
 		self.css = function(val) {
 			var k,
 			    f = '',
 			    c;
-			if (isObj(val)) {
+			if (isObj(val) && this[0]) {
 				for (k in val) {
 					if (val.hasOwnProperty(k)) {
 						c = k.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
@@ -275,14 +282,20 @@ var $ =  (function() {
 			}
 		};
 		self.me = function() {
-			return this[0];
+			if(this[0]){
+				return this[0];
+			}
 		};
 		self.on = function (ev, fn){
-			window.onload = this[0].addEventListener(ev, fn, false);
+			if(this[0]){
+				window.onload = this[0].addEventListener(ev, fn, false);
+			}
 		};
 		self.empty = function() {
-			while (this[0].firstChild) {
-				this[0].removeChild(this[0].firstChild);
+			if(this[0]){
+				while (this[0].firstChild) {
+					this[0].removeChild(this[0].firstChild);
+				}
 			}
 		};
 		return self;
