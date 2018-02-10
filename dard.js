@@ -9,7 +9,6 @@
  * and other useful functions
  *
  */
-
 function isObj(o) {
 	return typeof obj === 'object' || toString.call(o).split(/\W/)[2].toLowerCase() === 'object';
 }
@@ -83,10 +82,8 @@ function toggle(el) {
 };
 
 function myEvent(event, trigger, callback) {
-	if ($(trigger)) {
-		on($(trigger).addEventListener(event, callback, false));
-	} else {
-		console.log(trigger + ' can not be find in this page');
+	if (trigger) {
+		window.onload = trigger.on(event, callback, false);
 	}
 }
 
@@ -125,10 +122,6 @@ function counter() {
 	};
 };
 
-function on(your_functions_here) {
-	window.onload = your_functions_here;
-}
-
 /*
  *
  *  Here we go, we include js files on runtime
@@ -148,13 +141,16 @@ function require_js_module(src) {
 };
 
 function include_module(obj) {
-	var el = $(obj.el);
-	var node = str2el(obj.html);
-	if (el.hasChildNodes())
-		el.removeChild(el.firstChild);
-	el.appendChild(node);
-	if (obj.keyIn('js'))
-		require_js_module(obj.js);
+	var el, node;
+	if(obj.keyIn(El)){
+		el = obj.El;
+		node = str2el(obj.html);
+		if (el.hasChildNodes())
+			el.removeChild(el.firstChild);
+		el.appendChild(node);
+		if (obj.keyIn('js'))
+			require_js_module(obj.js);
+	}
 }
 
 // Useful Object relating functions
@@ -164,7 +160,7 @@ function myObj() {
 	self.keyIn = function(k) {
 		return this.hasOwnProperty(k) ? true : false;
 	};
-	self.type = function(i) {
+	self.isTypeOf = function(i) {
 		if (i && !isSet(i)) {
 			return 'undefined';
 		} else if (i && isFunc(i) && isSet(i.prototype)) {
@@ -210,7 +206,7 @@ function camelCase(str) {
 // the MAIN selector function
 //
 
-var $ = ( function() {
+var $ =  (function() {
 	var args = [],
 		document = window.document,
 
@@ -273,7 +269,7 @@ var $ = ( function() {
 			return this[0];
 		};
 		self.on = function (ev, fn){
-			window.onload = this[0].addEventListener(ev, fn, false);;
+			window.onload = this[0].addEventListener(ev, fn, false);
 		};
 		self.empty = function() {
 			while (this[0].firstChild) {
@@ -284,7 +280,7 @@ var $ = ( function() {
 	};
 	
 	// Selecting the element from first parameter
-	function getEl(arg, item) {
+	function GetEl(arg, item) {
 		var itemNo, el =  this,
 			args = varyArgs(arguments);
 		el.constructor.prototype = new Dard();
@@ -298,8 +294,8 @@ var $ = ( function() {
 				el[0] = document.createElement(arg.replace(/^<+|>+$/gm, ''));
 			if (plainTagRE.test(arg))
 				el[0] = document.getElementsByTagName(arg)[itemNo];
-		}else if( isObj(args[0]) && args[0].type() === 'dard'){
-			el = args[0];
+		}else if( isObj(arg) && arg.type() === 'dard'){
+			el = arg;
 		}
 		if (el[0]) {
 			return  el;
@@ -307,14 +303,14 @@ var $ = ( function() {
 	}
 
 	type(Dard);
-	type(getEl);
-	
+	type(GetEl);
+
 	return function () {
 		var args = varyArgs(arguments),
 		    itemNo;
 		if (args.length > 0) {
 			isNum(args[1]) ? itemNo = args[1] : itemNo = 0;
-			return new getEl(args[0], itemNo);
+			return new GetEl(args[0], itemNo);
 		}
 	};
 }());
