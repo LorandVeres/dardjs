@@ -222,16 +222,15 @@ dialog(
 						<input type="text" name="some" id="text_field" />
 						<br>
 						<br>
-						<input id="a" class="one" type="button" value="click me" />
-						<input id="b" class="two" type="button" value="second click" />
+						<input class="one" type="button" value="click me" />
+						<input class="two" type="button" value="second click" />
 					</form>
 				</div>
 			</div>
-			<script src="../dard.js"></script>
+			<script src="../dard.min.js"></script>
 			<script src="../darddialog.js"></script>
-			<script src="proto.js"></script>
 			<script type="text/javascript">
-				/*
+								/*
 				 * example with class names
 				 * class styles are defined in the head of html file
 				 * very easy to style , you can have multiple dialog
@@ -245,15 +244,14 @@ dialog(
 				 *
 				 *
 				 */
-
 				function first () {
 					alert('the class name of the trigger button is ' + this.className + "\n" + 'this is the first function passed to the dialog box');
 				};
+				console.log($('.dialog'));
 				function second () {
 					alert("this is the second function, \n showing the fact that you can attach functions \n and of course events to one dialog box");
 				};
-
-				dialog($('.dialog'), {
+				dialog($('.dialog').me(),{
 					// the below are preset classes
 					//css     dialog     head        close button   maximize     minimize     body         footer
 					css : ['dard_d_box', 'dard_d_hd', 'dard_d_bt', 'dard_d_bt', 'dard_d_bt', 'dard_d_bd', 'dard_d_f'],
@@ -261,7 +259,7 @@ dialog(
 					/*
 					 * html can be a literal string or for a DOM object see next example
 					 */
-					body : $('.button-dialog'),
+					body : $('.button-dialog').me(),
 					acton : {
 						/*
 						 * for each trigger has to be the same number of events
@@ -270,22 +268,20 @@ dialog(
 						 * are instantiated in a loop and paired to each other
 						 */
 						myevent : ['click', 'click'],
-						trigger : ['#a', '#b'],
+						trigger : ['.one', '.two'],
 						handler : [ first, second ]
 					},
 					onside : true,
 					drag : true
 				});
-
-				dialog($('.funybutton'), {
+				dialog( $('.funybutton')[0], {
 					css : ['dard_d_box_two', 'dard_d_hd', 'dard_d_bt', 'dard_d_bt', 'dard_d_bt', 'dard_d_bd_two', 'dard_d_f'],
 					transform : ['dialog-transition', 'second_hh', 'bd', 'f'],
 					title : 'Dardjs dialog box',
-					body : $('.dialog-box'),
+					body : $('.dialog-box')[0],
 					drag : true,
 					onside : false
 				});
-				console.log(dialog);
 			</script>
 		</div>
 		<footer>
