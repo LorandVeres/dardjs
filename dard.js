@@ -81,13 +81,9 @@ function toggle(el) {
 	s === 'none' ? el.style.display = 'block' : el.style.display = 'none';
 };
 
-function myEvent(event, trigger, callback) {
-	if (trigger) {
-		window.onload = trigger.on(event, callback, false);
-	}
-}
-
+//
 // recomended usage for testing pourpuse only
+//
 function simulateClick(onTarget) {
 	var evt = document.createEvent("MouseEvents");
 	evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
@@ -127,6 +123,11 @@ function counter() {
  *  Here we go, we include js files on runtime
  *  A benefit for modular aproach.
  *
+ *  this function is used inside the include_module()
+ * 
+ * 	this is an ajax request for the new js file to be loaded
+ * 	Not the ES6 standard , ok for earlier versions
+ * 
  */
 
 function require_js_module(src) {
@@ -140,10 +141,18 @@ function require_js_module(src) {
 	});
 };
 
+/*
+ * @ param obj{
+ * 		el :  // the recipient element t be pushed the new html 
+ * 		html :  // html string or oane dom element from ajax request  
+ * 		js :   // otional
+ * }
+ * 
+ */
 function include_module(obj) {
 	var el, node;
-	if(obj.keyIn(El)){
-		el = obj.El;
+	if(obj.keyIn('el')){
+		el = obj.el;
 		node = str2el(obj.html);
 		if (el.hasChildNodes())
 			el.removeChild(el.firstChild);
@@ -318,22 +327,26 @@ var $ =  (function() {
  *
  *
  * AJAX function with main funcionality on POST GET and JSON
- *
- *
+ * 
+ * 
+ * 
+ * The ajax object
+ * 
+ *	var ajaxObj = {
+ * 	
+ * @  	type : 'GET',  // type of request POST or GET
+ * @  	url : 'your/page/url', // the page url
+ * @  	response : 'function', //handle the response from server
+ * @  	send : null, // in GET request is optional
+ * @  	json : true, // optional required if you do not stringify before the object
+ * @  	error : 'custom error message' // optional to see for errors in consol log
+ * 
+ * };
  *
  */
 
 var ajax = function(obj) {
-	/*
-	 var ajaxObj = {
-	 type : 'GET',  // type of request POST or GET
-	 url : 'your/page/url', // the page url
-	 response : 'function', //handle the response from server
-	 send : null, // in GET request is optional
-	 json : true, // optional required if you do not stringify before the object
-	 error : 'custom error message' // optional to see for errors in consol log
-	 };
-	 */
+	
 	var getPostJson = function() {
 		var xhr = new XMLHttpRequest();
 		xhr.open(obj.type, obj.url);
@@ -380,10 +393,14 @@ var ajax = function(obj) {
 /*
  *
  *  Starting DOM manipulation functions
- *
- *
- *
+ * 
+ * 
+ * str2el()
+ * 
+ * Create a valid DOM element from a html string
+ * 
  */
+
 
 function str2el(html) {
 	var fakeEl = document.createElement('iframe');
