@@ -234,6 +234,7 @@ var $ =  (function() {
 		self.extendProto = function(prop) {
 			if (typeof prop === 'object')
 				Object.assign(self, prop);
+			return this;
 		};
 		self.append = function(e) {
 			if(this[0]){
@@ -242,30 +243,34 @@ var $ =  (function() {
 				if (isStr(e))
 					this[0].appendChild(str2el(e));
 			}
+			return this;
 		};
-		self.clone = function() {
-			if(this[0])
-				return this[0].cloneNode(true);
+		self.clone = function(fn) {
+			if(this[0] && isFunc(fn))
+				fn(this[0].cloneNode(true));
+			return this;
 		};
 		self.text = function(t) {
 			if(this[0]){
 				if (isStr(t)) {
 					this[0].innerHTML = t;
-				} else if (!t) {
-					var tx = this[0].innerHTML;
-					return tx;
+				} else if (isFunc(t)) {
+					t(this[0].innerHTML);
 				}
 			}
+			return this;
 		};
-		self.html = function(){
+		self.html = function(fn){
 			if (this[0])
-				return this[0].outerHTML;
+				fn(this[0].outerHTML);
+			return this;
 		};
 		self.toggle = function() {
 			if(this[0]){
 				var s = window.getComputedStyle(this.el, null).getPropertyValue("display");
 				s === 'none' ? this[0].style.display = 'block' : this[0].style.display = 'none';
 			}
+			return this;
 		};
 		self.css = function(val) {
 			var k,
@@ -280,6 +285,7 @@ var $ =  (function() {
 				}
 				this[0].style.cssText = f;
 			}
+			return this;
 		};
 		self.me = function() {
 			if(this[0]){
@@ -290,6 +296,13 @@ var $ =  (function() {
 			if(this[0]){
 				window.onload = this[0].addEventListener(ev, fn, false);
 			}
+			return this;
+		};
+		self.val = function (v){
+			if(this[0]){
+				this[0].value = v;
+			}
+			return this;
 		};
 		self.empty = function() {
 			if(this[0]){
@@ -297,6 +310,7 @@ var $ =  (function() {
 					this[0].removeChild(this[0].firstChild);
 				}
 			}
+			return this;
 		};
 		return self;
 	};
