@@ -143,20 +143,19 @@ function require_js_module(src) {
 
 /*
  * @ param obj{
- * 		el :  // the recipient element t be pushed the new html 
- * 		html :  // html string or oane dom element from ajax request  
- * 		js :   // otional
+ * 		el :  // the recipient element to be pushed in the new html 
+ * 		html :  // html string or one dom element from ajax request  
+ * 		js :   // optional
  * }
  * 
  */
 function include_module(obj) {
-	var el, node;
 	if(obj.keyIn('el')){
-		el = obj.el;
-		node = str2el(obj.html);
-		if (el.hasChildNodes())
+		var el = obj.el;
+		while(el.hasChildNodes()){
 			el.removeChild(el.firstChild);
-		el.appendChild(node);
+		}
+		isObj(obj.html) ? el.appendChild(obj.html) : el.appendChild(str2el(obj.html));
 		if (obj.keyIn('js'))
 			require_js_module(obj.js);
 	}
@@ -246,23 +245,44 @@ var $ =  (function() {
 			return this;
 		};
 		self.clone = function(fn) {
-			if(this[0] && isFunc(fn))
+			if(this[0] && isFunc(fn)){
 				fn(this[0].cloneNode(true));
+			}
 			return this;
 		};
-		self.text = function(t) {
+		self.ihtml = function(t) {
 			if(this[0]){
 				if (isStr(t)) {
 					this[0].innerHTML = t;
 				} else if (isFunc(t)) {
-					t(this[0].innerHTML);
+					t(me.innerHTML);
 				}
 			}
 			return this;
 		};
-		self.html = function(fn){
-			if (this[0])
-				fn(this[0].outerHTML);
+		self.ohtml = function( fn ){
+			if (this[0] && isFunc(fn)){
+				fn(his[0].outerHTML);
+			}
+			return this;
+		};
+		self.cnod = function(){
+			if(this[0]){
+				var arg = arguments;//varyArgs(arguments),
+					el = this[0].childNodes,
+					k = 0;
+				for(var i = 0, j = el.length; i < j; i++){
+					if(el[i].nodeName.toLowerCase() == arg[0].toLowerCase()){
+						if(arg.length == 2 && isFunc(arg[1]))
+							arg[1](el[i]);
+						if(arg.length == 3){
+							if(arg[2] == k++ && isFunc(arg[1])){
+								arg[1](el[i]);
+							}
+						}
+					}
+				}
+			}
 			return this;
 		};
 		self.toggle = function() {
@@ -373,7 +393,6 @@ var $ =  (function() {
  */
 
 var ajax = function(obj) {
-	
 	var getPostJson = function() {
 		var xhr = new XMLHttpRequest();
 		xhr.open(obj.type, obj.url);
